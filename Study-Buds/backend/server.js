@@ -9,6 +9,16 @@ const port = process.env.PORT || 5003;
 // Middleware
 app.use(bodyParser.json());
 
+//Function to generate random color
+const generateRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++){
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+};
+
 // Test Route
 app.get('/', (req, res) => {
     res.send('Study Buds Backend Running!');
@@ -25,16 +35,19 @@ app.post('/users', [
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { name, email, password, profile_picture } = req.body;
+
+    const { name, email, password } = req.body;
+    const profile_picture = generateRandomColor(); //automatically assign random color
+
     db.run(`
         INSERT INTO users (name, email, password, profile_picture) 
         VALUES (?, ?, ?, ?)`, 
-        [name, email, password, profile_picture || null],
+        [name, email, password, profile_picture],
         function(err) {
             if (err) {
                 res.status(400).json({ error: err.message });
             } else {
-                res.status(201).json({ user_id: this.lastID, name, email });
+                res.status(201).json({ user_id: this.lastID, name, email, profile_picture });
             }
         }
     );
@@ -57,15 +70,14 @@ app.put('/users/:id', [
     body('email').optional().isEmail().withMessage('Valid email is required.'),
 ], (req, res) => {
     const { id } = req.params;
-    const { name, email, profile_picture } = req.body;
+    const { name, email } = req.body;
     db.run(`
         UPDATE users SET 
             name = COALESCE(?, name), 
             email = COALESCE(?, email), 
-            profile_picture = COALESCE(?, profile_picture), 
             updated_at = CURRENT_TIMESTAMP
         WHERE user_id = ?`,
-        [name, email, profile_picture, id],
+        [name, email, id],
         function(err) {
             if (err) {
                 res.status(400).json({ error: err.message });
