@@ -1,13 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { body, validationResult } = require('express-validator');
-const db = require('./database');
+const db = require('./database'); 
+const jwt = require('jsonwebtoken');
+const bcrypt= require('bcrypt');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5003;
 
 // Middleware
 app.use(bodyParser.json());
+
 
 //Function to generate random color
 const generateRandomColor = () => {
@@ -51,6 +55,54 @@ app.post('/users', [
             }
         }
     );
+});
+
+//Register a new user
+app.post('/auth/register', [
+    //Validate input
+    body('name').notEmpty().withMessage('Name is required.'),
+    body('email').isEmail().withMessage('Valid email is required.'),
+    body('password').isLength({min:6}).withMessage('Password must be at least 6 characters long.')
+], async (req, res) => {
+    //Validate input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({errors: errors.array() });
+    }
+
+    const {name, email, password} = req.body;
+
+    try {
+        //check if email is already registered
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) {
+                console.error('Database Error', err);
+            return res.status(500).json({error: 'Database error.'});
+        }
+            if (user) {
+            return res.status(400).json({error: 'Email already in use.'});
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            db.run(`
+                INSERT INTO users (name, email, password)
+                VALUES (?,?,?)`,
+                [name, email, hashedPassword],
+                function(err) {
+                    if(err){
+                        console.error('Database Insertion Error:', err); 
+                        res.status(500).json({error: err.message});
+                    } else {
+                        res.status(201).json({message: 'User registered successfully!',user_id: this.lastID });
+                    }
+                }
+            );
+        });
+    } catch (err) {
+        console.error('Server Error:', err);
+        res.status(500).json({error: 'Internal server error.'});
+    }
 });
 
 // Get All Users
@@ -103,6 +155,75 @@ app.delete('/users/:id', (req, res) => {
         }
     });
 });
+
+// User Login
+app.post('/auth/login', [
+    body('email').isEmail().withMessage('Valid email is required.'),
+    body('password').notEmpty().withMessage('Password is required.')
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+
+    try {
+        // Find user with email
+        db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
+            if (err) {
+                console.error('Database Error:', err);
+                return res.status(500).json({ error: 'Database error occurred.' });
+            }
+            if (!user) {
+                return res.status(400).json({ error: 'Invalid email or password.' });
+            }
+
+            // Compare password
+            const isSame = await bcrypt.compare(password, user.password);
+            if (!isSame) {
+                return res.status(400).json({ error: 'Invalid email or password.' });
+            }
+
+            // Generate JWT
+            const token = jwt.sign(
+                { user_id: user.user_id }, 
+                process.env.JWT_SECRET, 
+                { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+            );
+
+            res.status(200).json({ message: 'Login successful!', token });
+        });
+    } catch (err) {
+        console.error('Server Error:', err);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+//Middleware to verify JWT Token
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied. No token provided.' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            console.error('JWT Verification Error:', err);
+            return res.status(403).json({ error: 'Invalid token.' });
+        }
+        req.user = user; // Attach user info to the request
+        next();
+    });
+};
+
+// Protected route example
+app.get('/protected', authenticateToken, (req, res) => {
+    res.status(200).json({ message: 'This is a protected resource.', user: req.user });
+});
+
 
 // ======================= COURSES CRUD =======================
 // Create Course
@@ -385,7 +506,6 @@ app.delete('/study-group-members/:study_group_id/:user_id', (req, res) => {
         }
     );
 });
-
 
 
 // Start Server
