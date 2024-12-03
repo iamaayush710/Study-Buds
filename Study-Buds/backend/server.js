@@ -1,13 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { body, validationResult } = require('express-validator');
-const db = require('./database');
+const db = require('./database'); 
 
 const app = express();
 const port = process.env.PORT || 5003;
 
+require('dotenv').config();
+const bcrypt = require('bcrypt');
+
 // Middleware
 app.use(bodyParser.json());
+
 
 //Function to generate random color
 const generateRandomColor = () => {
@@ -51,6 +55,51 @@ app.post('/users', [
             }
         }
     );
+});
+
+//Register a new user
+app.post('/auth/register', [
+    //Validate input
+    body('name').notEmpty().withMessage('Name is required.'),
+    body('email').isEmail().withMessage('Valid email is required.'),
+    body('password').isLength({min:6}).withMessage('Password must be at least 6 characters long.')
+], async (req, res) => {
+    //Validate input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({errors: errors.array() });
+    }
+
+    const {name, email, password} = req.body;
+
+    try {
+        //check if email is already registered
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) {
+            return res.status(500).json({error: 'Database error.'});
+        }
+            if (user) {
+            return res.status(400).json({error: 'Email already in use.'});
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            db.run(`
+                INSERT INTO users (name, email, password)
+                VALUES (?,?,?)`,
+                [name, email, hashedPassword],
+                function(err) {
+                    if(err){
+                        res.status(500).json({error: err.message});
+                    } else {
+                        res.status(201).json({message: 'User registered successfully!' });
+                    }
+                }
+            );
+        });
+    } catch (err) {
+        res.status(500).json({error: 'Internal server error.'});
+    }
 });
 
 // Get All Users
@@ -385,7 +434,6 @@ app.delete('/study-group-members/:study_group_id/:user_id', (req, res) => {
         }
     );
 });
-
 
 
 // Start Server
