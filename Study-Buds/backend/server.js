@@ -153,6 +153,42 @@ app.delete('/users/:id', (req, res) => {
     });
 });
 
+//User Login
+app.post('/auth/login', [
+    body('email').isEmail().withMessage('Valid email is required.'),
+    body('password').notEmpty().withMessage('Password is required.')
+], async (req,res) => {
+    const error = validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()});
+    }
+
+    const {email, password} = req.body;
+
+    try {
+        //find user with email
+        db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
+            if (!user){
+                return res.status(400).json({error: 'Invalid email or password.'});
+            }
+            //compare password
+            const isSame = await bcrypt.compare(password, user.password);
+            if (isSame) {
+                return res.status(400).json({error: 'Invalid email or password.'});
+            }
+            //generate JWT
+            const token = jwt.sign({user_id: user.user_id}, process.env.JWT_SECRET, {
+                expiresIn: process.env.JWT_EXPIRES_IN
+        });
+            res.status(200).json({message: 'Login successful!', token});
+        });
+    } catch (err) {
+        res.status(500).json({error: 'Internal server error.'});
+
+    }
+});
+
+
 // ======================= COURSES CRUD =======================
 // Create Course
 app.post('/courses', [
