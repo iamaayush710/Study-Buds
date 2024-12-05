@@ -1,14 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const { body, validationResult } = require('express-validator');
 const db = require('./database'); 
 const jwt = require('jsonwebtoken');
 const bcrypt= require('bcrypt');
 require('dotenv').config();
 
+
+
 const app = express();
 const port = process.env.PORT || 5003;
 
+app.use(cors());
 // Middleware
 app.use(bodyParser.json());
 
@@ -507,6 +511,61 @@ app.delete('/study-group-members/:study_group_id/:user_id', (req, res) => {
     );
 });
 
+// User statistics endpoint
+app.get('/user/stats', authenticateToken, (req, res) => {
+    const userId = req.user.user_id;
+    const statsQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM study_groups WHERE group_id IN 
+                (SELECT study_group_id FROM study_group_members WHERE user_id = ?)) AS activeGroups,
+            (SELECT COUNT(*) FROM sessions WHERE user_id = ? AND date > CURRENT_TIMESTAMP) AS scheduledSessions,
+            (SELECT AVG(rating) FROM reviews WHERE reviewed_user_id = ?) AS userRating
+    `;
+    db.get(statsQuery, [userId, userId, userId], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+
+// Announcements endpoint
+app.get('/announcements', authenticateToken, (req, res) => {
+    db.all(`SELECT * FROM announcements ORDER BY created_at DESC`, [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// Recent activities endpoint
+app.get('/user/activities', authenticateToken, (req, res) => {
+    const userId = req.user.user_id;
+    const activitiesQuery = `
+        SELECT * FROM activities 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT 10
+    `;
+    db.all(activitiesQuery, [userId], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// User profile endpoint
+app.get('/user/profile', authenticateToken, (req, res) => {
+    const userId = req.user.user_id;
+    db.get(`SELECT * FROM users WHERE user_id = ?`, [userId], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
 
 // Start Server
 app.listen(port, () => {
