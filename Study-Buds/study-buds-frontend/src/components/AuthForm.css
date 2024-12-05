@@ -1,0 +1,115 @@
+/* General container styling for the auth forms */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  padding: 0 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Card styling for the forms */
+.auth-card {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Typography for headings and labels */
+.auth-card h4 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.auth-card a {
+  color: #2575fc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-card a:hover {
+  text-decoration: underline;
+}
+
+/* Input fields styling */
+.MuiTextField-root {
+  margin-bottom: 20px !important;
+}
+
+.MuiOutlinedInput-root {
+  font-size: 16px;
+}
+
+.MuiInputLabel-root {
+  font-size: 14px;
+}
+
+/* Button styling */
+.MuiButton-root {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: none;
+  transition: background 0.3s ease;
+}
+
+.MuiButton-root:hover {
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+}
+
+.MuiButton-root:disabled {
+  background: #d3d3d3;
+  color: #888;
+}
+
+/* Error messages for validation */
+.MuiFormHelperText-root {
+  color: #d32f2f !important;
+  font-size: 12px !important;
+  margin-top: -5px;
+}
+
+/* Links and footer text */
+.auth-card p {
+  font-size: 14px;
+  margin-top: 20px;
+  color: #666;
+}
+
+/* Styling for the Forgot Password button */
+.forgot-password-btn {
+  background-color: transparent !important; /* Ensure no background */
+  color: #2575fc !important; /* Default color */
+  font-weight: 600;
+  text-transform: none;
+  text-decoration: underline;
+  font-size: 14px;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+.forgot-password-btn:hover {
+  text-decoration: none; /* Remove underline on hover */
+  color: #2c387e; /* Slightly darker blue */
+  background-color: transparent !important; /* Prevent hover background */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .auth-card {
+    padding: 30px 20px;
+  }
+
+  .auth-card h4 {
+    font-size: 1.5rem;
+  }
+}
