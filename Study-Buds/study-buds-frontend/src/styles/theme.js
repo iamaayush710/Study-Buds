@@ -1,17 +1,23 @@
+// theme.js
 import { createTheme } from '@mui/material/styles';
 
+// Pastel theme as discussed
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '#3f51b5',
+    primary: { main: '#b6927d' },
+    secondary: { main: '#83cf92' },
+    background: {
+      default: '#fbeee4',
+      paper: '#e6f2fe'
     },
-    secondary: {
-      main: '#f50057',
-    },
+    text: {
+      primary: '#333',
+      secondary: '#4f4f4f'
+    }
   },
   typography: {
-    fontFamily: 'Roboto, Arial, sans-serif',
-  },
+    fontFamily: 'Arial, sans-serif'
+  }
 });
 
 export default theme;
