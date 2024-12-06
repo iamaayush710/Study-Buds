@@ -1,3 +1,11 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  weight: 100%;
+  overflow: hidden;
+}
+
 .auth-container {
   display: flex;
   justify-content: center;
@@ -87,14 +95,6 @@
   font-size: 14px;
   margin-top: 20px;
   color: #666;
-}
-
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  weight: 100%;
-  overflow: hidden;
 }
 
 @media (max-width: 768px) {
