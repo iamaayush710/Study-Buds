@@ -45,6 +45,7 @@ const RegistrationForm = () => {
   return (
     <Box className="auth-container">
       <Box className="auth-card">
+        <Typography className="app-name">StudyBuds</Typography>
         <Typography variant="h4" gutterBottom>
           Register
         </Typography>
