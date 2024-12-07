@@ -138,6 +138,7 @@ const Dashboard = () => {
   // Placeholder Focus Timer
   const [focusTime, setFocusTime] = useState('24:59');
   
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

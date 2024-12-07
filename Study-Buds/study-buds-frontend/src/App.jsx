@@ -12,6 +12,7 @@ import ProfilePage from './components/ProfilePage';
 import GroupsPage from './components/GroupsPage';
 import AnnouncementsPage from './components/AnnouncementsPage';
 import ActivitiesPage from './components/ActivitiesPage';
+import CalendarPage from './components/CalendarPage';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -65,7 +66,14 @@ function App() {
               </PrivateRoute>
             }
           />
-
+          <Route  
+            path="/calendar"
+            element={
+              <PrivateRoute>
+                <CalendarPage />
+              </PrivateRoute>
+            }
+          />
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
