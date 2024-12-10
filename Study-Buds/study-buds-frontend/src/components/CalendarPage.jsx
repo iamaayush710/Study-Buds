@@ -1,39 +1,122 @@
-import React, {useState} from 'react';
-import {Box, Typography} from '@mui/material';
-import {styled} from '@mui/material/styles';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Paper, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import { parse, startOfWeek, getDay, format } from 'date-fns';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import Sidebar from './Sidebar';
+import Header from './Header';
+import axios from 'axios';
+import enUS from 'date-fns/locale/en-US';
 
-const CalendarContainer = styled(Box)(({theme}) => ({
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.shape.borderRadius * 2,
-    boxShadow: '0px 2px 6px rgba(0,0,0,0.1)',
-    padding: theme.spacing(3),
-    margin: theme.spacing(3,2),
-}));
+const locales = { 'en-US': enUS };
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: () => startOfWeek(new Date()),
+  getDay,
+  locales,
+});
 
 const CalendarPage = () => {
-    return <div>CalendarPage</div>
-};
-/**
-const CalendarPage = () => {
-    const [selectedDate, setSelectedDate] = useState(new Date());
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [open, setOpen] = useState(false);
+  const token = localStorage.getItem('token');
+  const headers = { Authorization: `Bearer ${token}` };
 
-    const handleDateChange = (date) => {
-        setSelectedDate(date);
-        console.log('Selected Date:', date);
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const tasksResponse = await axios.get('http://localhost:5001/tasks', { headers });
+        const sessionsResponse = await axios.get('http://localhost:5001/sessions/all', { headers });
+
+        const tasks = tasksResponse.data.map((task) => ({
+          title: task.title,
+          start: new Date(task.due_date),
+          end: new Date(new Date(task.due_date).getTime() + 60 * 60 * 1000),
+          allDay: false,
+          type: 'task',
+          details: task,
+        }));
+
+        const sessions = sessionsResponse.data.map((session) => ({
+          title: session.title,
+          start: new Date(session.date),
+          end: new Date(new Date(session.date).getTime() + session.duration * 60 * 1000),
+          allDay: false,
+          type: 'session',
+          details: session,
+        }));
+
+        setEvents([...tasks, ...sessions]);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
     };
+    fetchEvents();
+  }, [headers]);
 
-    return (
-        <CalendarContainer>
-            <Typography varient="h5" gutterButton>Calendar</Typography>
+  const handleSelectEvent = (event) => {
+    setSelectedEvent(event);
+    setOpen(true);
+  };
+
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Box display="flex" height="100vh">
+      <Sidebar />
+      <Box flex={1} display="flex" flexDirection="column">
+        <Header />
+        <Box p={3} flex={1}>
+          <Typography variant="h4" gutterBottom>
+            Calendar
+          </Typography>
+          <Paper sx={{ p: 2, height: '80%', background: '#ffffff' }}>
             <Calendar
-            onChange={handleDateChange}
-            value={selectedDate}
-            tileClassName="calendar-tile"
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: '100%' }}
+              views={['month', 'week', 'day']}
+              defaultView="month"
+              onSelectEvent={handleSelectEvent}
             />
-        </CalendarContainer>
-    );
+          </Paper>
+        </Box>
+      </Box>
+
+      {/* Event Modal */}
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Event Details</DialogTitle>
+        <DialogContent>
+          {selectedEvent && (
+            <>
+              <Typography variant="h6">{selectedEvent.title}</Typography>
+              {selectedEvent.type === 'task' && (
+                <>
+                  <Typography>Due Date: {new Date(selectedEvent.details.due_date).toLocaleString()}</Typography>
+                  <Typography>Subject: {selectedEvent.details.subject || 'N/A'}</Typography>
+                </>
+              )}
+              {selectedEvent.type === 'session' && (
+                <>
+                  <Typography>Venue: {selectedEvent.details.venue}</Typography>
+                  <Typography>Type: {selectedEvent.details.type}</Typography>
+                  <Typography>Date: {new Date(selectedEvent.details.date).toLocaleString()}</Typography>
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
 };
-**/
+
 export default CalendarPage;
