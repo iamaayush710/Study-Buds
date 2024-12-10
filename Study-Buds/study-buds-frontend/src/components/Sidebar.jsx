@@ -36,7 +36,7 @@ const Sidebar = () => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Sessions', icon: <EventNoteIcon />, path: "/sessions" },
     { text: 'Announcements', icon: <AnnouncementIcon />, path: '/announcements' },
-    { text: 'Activities', icon: <AssessmentIcon />, path: '/activities' },
+    { text: 'Study Break', icon: <AssessmentIcon />, path: '/activities' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     { text: 'Calendar', icon: <CalendarTodayIcon />, path: '/calendar' },
     { text: 'Focus Timer', icon: <TimerIcon />, path: '/focus-timer' },

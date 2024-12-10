@@ -14,6 +14,7 @@ import TasksPage from "./components/TasksPage.jsx";
 import CalendarPage from "./components/CalendarPage.jsx";
 import FocusTimer from "./components/FocusTimer.jsx";
 import AnnouncementsPage from "./components/AnnouncementPage.jsx";
+import ActivitiesPage from './components/ActivitiesPage.jsx';
 import ToolsPage from "./components/ToolsPage.jsx";
 //import './index.css';
 
@@ -49,6 +50,14 @@ const App = () => (
                     element={
                         <PrivateRoute>
                             <TasksPage />
+                            </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/activities"
+                    element={
+                        <PrivateRoute>
+                            <ActivitiesPage />
                             </PrivateRoute>
                     }
                 />
