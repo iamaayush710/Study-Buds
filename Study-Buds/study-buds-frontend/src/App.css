@@ -64,10 +64,10 @@
 }
 
 .greeting-card {
-  background: #6886d3;
+  background: linear-gradient(135deg, #d0b8fa, #99b7f6) !important;
   border-radius: 15px;
   padding: 20px;
-  color: #333;
+  color: #020202 !important;
   margin-bottom: 20px;
 }
 

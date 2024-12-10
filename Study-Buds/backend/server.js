@@ -7,8 +7,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt= require('bcrypt');
 require('dotenv').config();
 
-
-
 const app = express();
 const port = process.env.PORT || 5001;
 
@@ -30,6 +28,30 @@ const generateRandomColor = () => {
 // Test Route
 app.get('/', (req, res) => {
     res.send('Study Buds Backend Running!');
+});
+
+//verify token
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied. No token provided.' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            console.error('JWT Verification Error:', err);
+            return res.status(403).json({ error: 'Invalid token.' });
+        }
+        req.user = user; // Attach user info to the request
+        next();
+    });
+};
+
+// Protected route 
+app.get('/protected', authenticateToken, (req, res) => {
+    res.status(200).json({ message: 'This is a protected resource.', user: req.user });
 });
 
 // USERS CRUD
@@ -121,36 +143,86 @@ app.get('/users', (req, res) => {
 
 // Update User
 app.put('/users/:id', [
+    authenticateToken,
     body('name').optional().notEmpty().withMessage('Name cannot be empty.'),
     body('email').optional().isEmail().withMessage('Valid email is required.'),
 ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     const { id } = req.params;
-    const { name, email } = req.body;
-    db.run(`
-        UPDATE users SET 
-            name = COALESCE(?, name), 
-            email = COALESCE(?, email), 
-            updated_at = CURRENT_TIMESTAMP
-        WHERE user_id = ?`,
-        [name, email, id],
-        function(err) {
+    const { name, email, profile_picture } = req.body;
+
+    // Check user is updating their own profile
+    if (parseInt(id, 10) !== req.user.user_id) {
+        return res.status(403).json({ error: 'You can only update your own profile.' });
+    }
+
+    // Check email is not in use
+    if (email) {
+        db.get(`SELECT * FROM users WHERE email = ? AND user_id != ?`, [email, id], (err, row) => {
             if (err) {
-                res.status(400).json({ error: err.message });
-            } else if (this.changes === 0) {
-                res.status(404).json({ error: 'User not found.' });
-            } else {
-                res.json({ message: 'User updated successfully.' });
+                console.error('Database Query Error:', err);
+                return res.status(500).json({ error: 'Database error occurred.' });
             }
-        }
-    );
+
+            if (row) {
+                return res.status(400).json({ error: 'Email is already in use by another account.' });
+            }
+            proceedToUpdate();
+        });
+    } else {
+        proceedToUpdate();
+    }
+
+    function proceedToUpdate() {
+        db.run(`
+            UPDATE users SET 
+                name = COALESCE(?, name), 
+                email = COALESCE(?, email), 
+                profile_picture = COALESCE(?, profile_picture),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?`,
+            [name, email, profile_picture, id],
+            function(err) {
+                if (err) {
+                    console.error('Database Update Error:', err);
+                    res.status(500).json({ error: 'Failed to update profile.' });
+                } else if (this.changes === 0) {
+                    res.status(404).json({ error: 'User not found.' });
+                } else {
+                    // get the updated profile to return
+                    db.get(`SELECT user_id, name, email, profile_picture FROM users WHERE user_id = ?`, [id], (err, updatedUser) => {
+                        if (err) {
+                            console.error('Database Fetch Error:', err);
+                            return res.status(500).json({ error: 'Database error occurred.' });
+                        }
+
+                        res.json({
+                            message: 'Profile updated successfully.',
+                            user: updatedUser,
+                        });
+                    });
+                }
+            }
+        );
+    }
 });
 
 // Delete User
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
+
+    // Check user is deleting their own profile
+    if (parseInt(id, 10) !== req.user.user_id) {
+        return res.status(403).json({ error: 'You can only delete your own profile.' });
+    }
+
     db.run(`DELETE FROM users WHERE user_id = ?`, id, function(err) {
         if (err) {
-            res.status(500).json({ error: err.message });
+            console.error('Database Delete Error:', err);
+            res.status(500).json({ error: 'Failed to delete user.' });
         } else if (this.changes === 0) {
             res.status(404).json({ error: 'User not found.' });
         } else {
@@ -200,30 +272,6 @@ app.post('/auth/login', [
         console.error('Server Error:', err);
         res.status(500).json({ error: 'Internal server error.' });
     }
-});
-
-//verify token
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access denied. No token provided.' });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            console.error('JWT Verification Error:', err);
-            return res.status(403).json({ error: 'Invalid token.' });
-        }
-        req.user = user; // Attach user info to the request
-        next();
-    });
-};
-
-// Protected route 
-app.get('/protected', authenticateToken, (req, res) => {
-    res.status(200).json({ message: 'This is a protected resource.', user: req.user });
 });
 
 

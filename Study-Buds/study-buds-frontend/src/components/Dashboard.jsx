@@ -482,7 +482,7 @@ const Dashboard = () => {
                     </Button>
                   </Box>
                   <Typography variant="h6" className="dashboard-section-title" gutterBottom sx={{marginTop: 4}}>
-                    Time Spent Per Subject
+                    Focus Sessions Completed
                   </Typography>
                   {subjectTime.length === 0 ? (
                   <Typography>No focus sessions logged yet.</Typography>

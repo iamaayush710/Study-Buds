@@ -71,12 +71,17 @@ const Header = () => {
       {profile && (
         <Tooltip title={`${profile.name} - ${profile.email}`}>
           <Avatar
+            src={profile.profile_picture?.startsWith('#') ? undefined : profile.profile_picture}
             sx={{
-              bgcolor: 'profile.profile_picture' || '#6c63ff', 
-              color: '#000000',
-              fontWeight: 'bold',
+              backgroundColor: profile.profile_picture?.startsWith('#')
+                ? profile.profile_picture
+                : undefined, 
+              color: profile.profile_picture?.startsWith('#') ? '#fff' : '#000',
+              width: 56,
+              height: 56,
               cursor: 'pointer',
-              border: '2px solid #000000', 
+              border: '2px solid #000',
+              fontWeight: 'bold',
             }}
           >
             {profile.name?.charAt(0).toUpperCase() || 'U'}
