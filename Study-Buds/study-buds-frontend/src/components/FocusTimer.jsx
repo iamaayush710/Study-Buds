@@ -35,7 +35,7 @@ const FocusTimer = () => {
       setIsRunning(false);
       logFocusSession();
       alert('Focus session goal completed!');
-      setTimer(customTime * 60); // Reset timer
+      setTimer(customTime * 60); 
     }
   }, [timer, isRunning]);
 

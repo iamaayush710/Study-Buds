@@ -33,7 +33,7 @@ const RegistrationForm = () => {
     setLoading(true);
     try {
       const response = await axios.post('http://localhost:5001/auth/register', { name, email, password });
-      //alert(`Registration successful: ${response.data.message}`);
+      alert(`Registration successful: ${response.data.message}`);
       navigate('/login');
     } catch (error) {
       alert(`Error: ${error.response?.data?.error || 'Something went wrong'}`);

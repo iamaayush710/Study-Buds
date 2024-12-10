@@ -10,13 +10,10 @@ import theme from "./styles/theme.js";
 import CssBaseline from "@mui/material/CssBaseline";
 import RegistrationForm from "./components/Register";
 import ProfilePage from "./components/ProfilePage.jsx";
-import TasksPage from "./components/TasksPage.jsx";
 import CalendarPage from "./components/CalendarPage.jsx";
 import FocusTimer from "./components/FocusTimer.jsx";
 import AnnouncementsPage from "./components/AnnouncementPage.jsx";
 import ActivitiesPage from './components/ActivitiesPage.jsx';
-import ToolsPage from "./components/ToolsPage.jsx";
-//import './index.css';
 
 const App = () => (
     <ThemeProvider theme={theme}>
@@ -42,14 +39,6 @@ const App = () => (
                     element={
                         <PrivateRoute>
                             <ProfilePage />
-                            </PrivateRoute>
-                    }
-                />
-                <Route
-                    path="/tasks"
-                    element={
-                        <PrivateRoute>
-                            <TasksPage />
                             </PrivateRoute>
                     }
                 />
@@ -91,15 +80,6 @@ const App = () => (
                     element={
                         <PrivateRoute>
                             <AnnouncementsPage />
-                        </PrivateRoute>
-                    }
-                />
-
-                <Route
-                    path="/tools"
-                    element={
-                        <PrivateRoute>
-                            <ToolsPage />
                         </PrivateRoute>
                     }
                 />

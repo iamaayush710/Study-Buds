@@ -37,7 +37,6 @@ const Dashboard = () => {
 
   const fetchSessions = async () => {
     try {
-      // Updated the endpoint here:
       const response = await axios.get('http://localhost:5001/sessions/interested', { headers });
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const todaySessions = response.data.filter(
@@ -82,7 +81,7 @@ const Dashboard = () => {
     fetchSessions();
   }, [headers]);
 
-  // Listen for interestChanged events from SessionsPage to refresh today's sessions
+  // Listen for interestChanged events 
   useEffect(() => {
     const handleInterestChanged = () => {
       console.log('Interest changed event triggered.');
@@ -141,7 +140,6 @@ const Dashboard = () => {
     }
     try {
       if (editingTask) {
-        // Update task
         await axios.put(
           `http://localhost:5001/tasks/${editingTask.task_id}`,
           {
@@ -159,7 +157,6 @@ const Dashboard = () => {
           )
         );
       } else {
-        // Add task
         const response = await axios.post(
           'http://localhost:5001/tasks',
           {
@@ -305,6 +302,7 @@ const Dashboard = () => {
           <Grid container spacing={3}>
             {/*Left Column*/}
             <Grid item xs={12} md={8}>
+
               {/*Greeting Card*/}
               <Paper className="greeting-card">
                 <Typography variant="h5" gutterBottom>
@@ -378,8 +376,9 @@ const Dashboard = () => {
             </Grid>
 
             {/*Right Column */}
-            <Grid item xs={12} md={4}>
-              {/*Today's Sessions Section (Fixed variant typo)*/}
+            <Grid item xs={12} md={4}>\
+
+              {/*Today's Sessions */}
               <Paper className="dashboard-section">
                 <Typography variant="h6" className="dashboard-section-title" gutterBottom>
                   Today's Sessions

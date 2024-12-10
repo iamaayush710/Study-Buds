@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {
   Drawer,
   List,
-  ListItem,
   ListItemText,
   ListItemIcon,
   ListItemButton,
@@ -22,7 +21,7 @@ import TimerIcon from '@mui/icons-material/Timer';
 import ToolsIcon from '@mui/icons-material/Construction';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../App.css';
 
 const drawerWidth = 260; // fixed width for the sidebar
@@ -59,17 +58,6 @@ const Sidebar = () => {
     navigate('/login');
   };
 
-  const handleNavigation = (path) => {
-    if (path === '/logout') {
-      handleLogout();
-    } else {
-      navigate(path);
-    }
-  };
-
-  const handleToolsClick = () => {
-    setToolsOpen((prevOpen) => !prevOpen);
-  };
 
   return (
     <Drawer

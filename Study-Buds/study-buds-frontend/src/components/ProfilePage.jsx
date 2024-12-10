@@ -18,11 +18,11 @@ const ProfilePage = () => {
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
-  // Fetch Profile
+  // Get Profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await api.get('/user/profile'); // Using relative path since baseURL is set in api.js
+        const response = await api.get('/user/profile'); 
         setProfile(response.data);
         setForm({
           name: response.data.name || '',
@@ -51,7 +51,6 @@ const ProfilePage = () => {
       return;
     }
     try {
-      // Use the correct endpoint with user_id
       const response = await api.put(`/users/${profile.user_id}`, { name, email, profile_picture });
       setSuccess(response.data.message || 'Profile updated successfully.');
       setError('');
@@ -90,7 +89,7 @@ const ProfilePage = () => {
     try {
       const response = await api.delete(`/users/${profile.user_id}`);
       alert(response.data.message || 'Profile deleted successfully.');
-      // Clear the token and redirect to login or home page
+      // Clear token and redirect to login
       localStorage.removeItem('token');
       navigate('/login'); 
     } catch (error) {
@@ -119,9 +118,6 @@ const ProfilePage = () => {
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
         <Box p={3} flex={1} overflow="auto">
-          {/*<Typography variant="h4" gutterBottom>
-            My Profile
-          </Typography>*/}
 
           {/* Display Success or Error Messages */}
           {error && (

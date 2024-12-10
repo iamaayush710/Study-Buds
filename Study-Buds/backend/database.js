@@ -1,8 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+import { resolve } from 'path';
 
 // Connect to SQLite database
-const db = new sqlite3.Database(path.resolve(__dirname, 'studybuds.db'), (err) => {
+const db = new sqlite3.Database(resolve(__dirname, 'studybuds.db'), (err) => {
     if (err) {
         console.error('Error connecting to the database', err.message);
     } else {
@@ -141,4 +141,4 @@ db.run(`
     );
 `);
 
-module.exports = db;
+export default db;

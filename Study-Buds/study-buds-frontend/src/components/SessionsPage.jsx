@@ -35,7 +35,7 @@ const SessionsPage = () => {
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
-  // Fetch logged-in user profile to get user ID
+  // Get logged-in user profile to get user ID
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -49,7 +49,7 @@ const SessionsPage = () => {
     fetchProfile();
   }, [headers]);
 
-  // Fetch all sessions
+  // Get all sessions
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -146,6 +146,7 @@ const SessionsPage = () => {
           <Typography variant="h4" gutterBottom>
             Study Sessions
           </Typography>
+
           {/* Add Session Form */}
           <Paper sx={{ p: 2, mb: 2, background: '#ffffff' }}>
             <Typography variant="h6" gutterBottom>
@@ -231,6 +232,7 @@ const SessionsPage = () => {
                         minute: '2-digit',
                       })}`}
                     />
+
                     {/* Interested Button */}
                     <IconButton
                       onClick={() => handleToggleInterest(session.session_id)}
@@ -242,6 +244,7 @@ const SessionsPage = () => {
                         <StarBorderIcon />
                       )}
                     </IconButton>
+                    
                     {/* Delete Button (only for session creator) */}
                     {session.user_id === userId && (
                       <IconButton

@@ -70,9 +70,7 @@ const CalendarPage = () => {
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
         <Box p={3} flex={1} style={{paddingBottom: '20px'}}>
-          {/*<Typography variant="h4" gutterBottom>
-            Calendar
-          </Typography>*/}
+          
           <Paper sx={{ p: 2, height: 'calc(100% - 50px)', background: '#ffffff', overflow: 'hidden'}}>
             <Calendar
               localizer={localizer}
@@ -88,7 +86,7 @@ const CalendarPage = () => {
         </Box>
       </Box>
 
-      {/* Event Modal */}
+      {/* Event View */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Event Details</DialogTitle>
         <DialogContent>

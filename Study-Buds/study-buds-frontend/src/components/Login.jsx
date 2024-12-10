@@ -23,8 +23,6 @@ const Login = () => {
       //store token for future use
       localStorage.setItem('token', token);
 
-  
-      //alert(`Login successful: ${response.data.message}`);
       navigate('/dashboard'); // redirect to dashboard 
 
     } catch (err) {

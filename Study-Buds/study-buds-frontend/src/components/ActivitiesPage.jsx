@@ -3,15 +3,12 @@ import {
   Box,
   Typography,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
   Button
 } from '@mui/material';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import axios from 'axios';
-import '../App.css'; // Ensure this imports your CSS with the animation
+import '../App.css'; 
 
 const ActivitiesPage = () => {
   const token = localStorage.getItem('token');
@@ -19,20 +16,20 @@ const ActivitiesPage = () => {
 
   const [activities, setActivities] = useState([]);
   
-  // A few random fun break tips:
+  // A few random fun break tips
   const tips = [
     "Take a deep breath and smile!",
     "Hydrate! Grab a glass of water before your next task.",
-    "Stand up and stretch for a minute—your body will thank you.",
+    "Stand up and stretch for a minute — your body will thank you.",
     "Look away from the screen and blink slowly.",
     "Remember: small breaks can boost creativity.",
-    "You’re doing great—keep it up!"
+    "You are doing great - keep it up!"
   ];
 
-  // Choose a random tip each time:
+  // Choose a random tip each time
   const [tip] = useState(() => tips[Math.floor(Math.random()*tips.length)]);
 
-  // A selection of games to embed:
+  // A selection of games to embed
   const games = [
     {
       name: "Sudoku",
@@ -80,34 +77,8 @@ const ActivitiesPage = () => {
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
         <Box p={3} flex={1} overflow="auto">
-          <Typography variant="h4" gutterBottom>
-            Activities
-          </Typography>
 
-          {/* Recent Activities Section */}
-          <Paper sx={{ p: 2, background: '#ffffff', mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Recent Activities
-            </Typography>
-            {activities.length === 0 ? (
-              <Typography>No recent activities found.</Typography>
-            ) : (
-              <List>
-                {activities.map((activity) => (
-                  <ListItem key={activity.activity_id}>
-                    <ListItemText
-                      primary={activity.description}
-                      secondary={`${activity.created_at}${
-                        activity.subject ? ' | Subject: ' + activity.subject : ''
-                      }${activity.type ? ' | Type: ' + activity.type : ''}`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Paper>
-
-          {/* Fun Section: Tip of the Day */}
+          {/* Tip of the Day */}
           <Paper sx={{ p: 2, background: '#ffffff', mb: 3 }}>
             <Typography variant="h6" gutterBottom>
               Quick Break Tip
@@ -117,7 +88,7 @@ const ActivitiesPage = () => {
             </Typography>
           </Paper>
 
-          {/* Fun Puzzle / Game Section */}
+          {/* Game Section */}
           <Paper sx={{ p: 2, background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
             <Typography variant="h6" gutterBottom>
               Take a Fun Break!
