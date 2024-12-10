@@ -24,7 +24,7 @@ const Login = () => {
       localStorage.setItem('token', token);
 
   
-      alert(`Login successful: ${response.data.message}`);
+      //alert(`Login successful: ${response.data.message}`);
       navigate('/dashboard'); // redirect to dashboard 
 
     } catch (err) {

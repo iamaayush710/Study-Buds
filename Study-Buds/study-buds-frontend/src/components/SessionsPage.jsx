@@ -148,9 +148,9 @@ const SessionsPage = () => {
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
         <Box p={3} flex={1} overflow="auto">
-          <Typography variant="h4" gutterBottom>
+         {/* <Typography variant="h4" gutterBottom>
             Study Sessions
-          </Typography>
+          </Typography>*/}
           {/* Add Session Form */}
           <Paper sx={{ p: 2, mb: 2, background: '#ffffff' }}>
             <Typography variant="h6" gutterBottom>

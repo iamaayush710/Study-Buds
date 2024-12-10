@@ -69,17 +69,17 @@ const CalendarPage = () => {
       <Sidebar />
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
-        <Box p={3} flex={1}>
-          <Typography variant="h4" gutterBottom>
+        <Box p={3} flex={1} style={{paddingBottom: '20px'}}>
+          {/*<Typography variant="h4" gutterBottom>
             Calendar
-          </Typography>
-          <Paper sx={{ p: 2, height: '80%', background: '#ffffff' }}>
+          </Typography>*/}
+          <Paper sx={{ p: 2, height: 'calc(100% - 50px)', background: '#ffffff', overflow: 'hidden'}}>
             <Calendar
               localizer={localizer}
               events={events}
               startAccessor="start"
               endAccessor="end"
-              style={{ height: '100%' }}
+              style={{ height: '100%', minHeight: 0 }}
               views={['month', 'week', 'day']}
               defaultView="month"
               onSelectEvent={handleSelectEvent}

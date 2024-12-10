@@ -119,9 +119,9 @@ const ProfilePage = () => {
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
         <Box p={3} flex={1} overflow="auto">
-          <Typography variant="h4" gutterBottom>
+          {/*<Typography variant="h4" gutterBottom>
             My Profile
-          </Typography>
+          </Typography>*/}
 
           {/* Display Success or Error Messages */}
           {error && (
