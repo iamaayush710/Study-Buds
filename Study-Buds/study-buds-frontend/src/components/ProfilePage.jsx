@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Paper, Avatar, Alert } from '@mui/material';
-import axios from 'axios'; // Ensure axios is imported
+import { Box, Typography, TextField, Button, Paper, Avatar, Alert,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+ } from '@mui/material';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useNavigate } from 'react-router-dom';
+import api from '../api';
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', profile_picture: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -17,7 +22,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/user/profile', { headers });
+        const response = await api.get('/user/profile'); // Using relative path since baseURL is set in api.js
         setProfile(response.data);
         setForm({
           name: response.data.name || '',
@@ -33,7 +38,7 @@ const ProfilePage = () => {
       }
     };
     fetchProfile();
-  }, [headers]);
+  }, []);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -47,20 +52,63 @@ const ProfilePage = () => {
     }
     try {
       // Use the correct endpoint with user_id
-      await axios.put(`http://localhost:5001/users/${profile.user_id}`, { name, email, profile_picture }, { headers });
-      setSuccess('Profile updated successfully.');
+      const response = await api.put(`/users/${profile.user_id}`, { name, email, profile_picture });
+      setSuccess(response.data.message || 'Profile updated successfully.');
       setError('');
-      // Refetch profile to ensure data consistency
-      const response = await axios.get('http://localhost:5001/user/profile', { headers });
-      setProfile(response.data);
+      //update profile state
+      setProfile(response.data.user);
     } catch (error) {
       console.error('Error updating profile:', error);
-      setError(
-        error.response?.data?.error ||
-          'Failed to update profile. Please try again later.'
-      );
+      if (error.response && error.response.data) {
+        if (error.response.data.errors) {
+          // Handle validation errors
+          const validationErrors = error.response.data.errors.map(err => err.msg).join(' ');
+          setError(validationErrors);
+        } else {
+          setError(error.response.data.error || 'Failed to update profile. Please try again later.');
+        }
+      } else {
+        setError('Failed to update profile. Please try again later.');
+      }
       setSuccess('');
     }
+  };
+
+  const handleReset = () => {
+    if(profile) {
+      setForm({
+        name: profile.name || '',
+        email: profile.email || '',
+        profile_picture: profile.profile_picture || '',
+      });
+      setError('');
+      setSuccess('');
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    try {
+      const response = await api.delete(`/users/${profile.user_id}`);
+      alert(response.data.message || 'Profile deleted successfully.');
+      // Clear the token and redirect to login or home page
+      localStorage.removeItem('token');
+      navigate('/login'); 
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      if (error.response && error.response.data) {
+        setError(error.response.data.error || 'Failed to delete profile. Please try again later.');
+      } else {
+        setError('Failed to delete profile. Please try again later.');
+      }
+    }
+  };
+
+  const handleOpenDeleteDialog = () => {
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
   };
 
   if (!profile) return <Box p={3}>Loading...</Box>;
@@ -91,13 +139,15 @@ const ProfilePage = () => {
             <Box display="flex" flexDirection="column" gap={2}>
               <Box display="flex" alignItems="center" gap={2}>
                 <Avatar
-                  src={form.profile_picture}
                   alt={form.name}
-                  sx={{ width: 56, height: 56 }}
+                  sx={{ 
+                    width: 56, 
+                    height: 56,
+                    backgroundColor: form.profile_picture }}
                 >
                   {form.name.charAt(0).toUpperCase() || 'U'}
                 </Avatar>
-                <Typography variant="h6">Change Profile Picture</Typography>
+                <Typography variant="h6">Update Profile</Typography>
               </Box>
               <TextField
                 label="Full Name"
@@ -115,7 +165,7 @@ const ProfilePage = () => {
                 onChange={(e) => handleChange('email', e.target.value)}
               />
               <TextField
-                label="Profile Picture URL"
+                label="Profile Picture Color"
                 variant="outlined"
                 fullWidth
                 value={form.profile_picture}
@@ -127,19 +177,44 @@ const ProfilePage = () => {
                 </Button>
                 <Button
                   variant="outlined"
-                  onClick={() =>
-                    setForm({
-                      name: profile.name,
-                      email: profile.email,
-                      profile_picture: profile.profile_picture,
-                    })
-                  }
+                  onClick={handleReset}
                 >
                   Reset
                 </Button>
               </Box>
+              <Box display="flex" justifyContent="flex-end" mt={2}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleOpenDeleteDialog}
+                >
+                  Delete Profile
+                </Button>
+              </Box>
             </Box>
           </Paper>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={openDeleteDialog}
+            onClose={handleCloseDeleteDialog}
+            aria-labelledby="delete-dialog-title"
+            aria-describedby="delete-dialog-description"
+          >
+            <DialogTitle id="delete-dialog-title">Confirm Profile Deletion</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="delete-dialog-description">
+                Are you sure you want to delete your profile? This action is irreversible and will remove all your data from our system.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+              <Button onClick={handleDeleteProfile} color="error">
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+
         </Box>
       </Box>
     </Box>
