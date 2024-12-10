@@ -25,7 +25,7 @@ const Login = () => {
 
   
       alert(`Login successful: ${response.data.message}`);
-      navigate('/'); // Redirect to dashboard page
+      navigate('/dashboard'); // redirect to dashboard 
 
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
@@ -38,7 +38,7 @@ const Login = () => {
     <Box className="auth-container">
       <Box className="auth-card">
         <Typography className="app-name">StudyBuds</Typography>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h5" gutterBottom>
           Login
         </Typography>
         <form onSubmit={handleLogin}>
