@@ -24,22 +24,22 @@ import Header from './Header';
 import axios from 'axios';
 import '../App.css';
 
-
 const Dashboard = () => {
-  const [profile, setProfile] = useState({name: 'User', email: 'user@example.com'});
+  const [profile, setProfile] = useState({ name: 'User', email: 'user@example.com' });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({title: '', date: '', time: '', subject: ''});
+  const [newTask, setNewTask] = useState({ title: '', date: '', time: '', subject: '' });
   const [editingTask, setEditingTask] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sessions, setSessions] = useState([]);
   const token = localStorage.getItem('token');
-  const headers = {Authorization: `Bearer ${token}`};
+  const headers = { Authorization: `Bearer ${token}` };
 
-  const fetchSessions= async () => {
-    try{
-      const response = await axios.get('http://localhost:5001/user_sessions/is_interested', {headers});
-      const today = new Date().toISOString().split('T')[0]; //date YYYY-MM-DD
+  const fetchSessions = async () => {
+    try {
+      // Updated the endpoint here:
+      const response = await axios.get('http://localhost:5001/sessions/interested', { headers });
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const todaySessions = response.data.filter(
         (session) => session.date.split('T')[0] === today
       );
@@ -50,35 +50,7 @@ const Dashboard = () => {
     }
   };
 
-  //get profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get('http://localhost:5001/user/profile', {headers});
-        setProfile(response.data);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-    fetchProfile();
-  }, [headers]);
-
-  //get tasks
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get('http://localhost:5001/tasks', {headers});
-        setTasks(response.data);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
-    fetchTasks();
-  }, [headers]);
-
-  //get today's interested sessions
-  
-  //fetch user profile
+  // Fetch user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -91,13 +63,13 @@ const Dashboard = () => {
     fetchProfile();
   }, [headers]);
 
-  //fetch tasks
+  // Fetch tasks
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await axios.get('http://localhost:5001/tasks', { headers });
         setTasks(response.data);
-        console.error('Fetched Tasks:', response.data);
+        console.log('Fetched Tasks:', response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
@@ -105,12 +77,12 @@ const Dashboard = () => {
     fetchTasks();
   }, [headers]);
 
-  //fetch interested sessions today
+  // Fetch interested sessions for today
   useEffect(() => {
-    fetchSessions(); 
+    fetchSessions();
   }, [headers]);
 
-  //listened for 'interestChanged' Events to Refresh Sessions**
+  // Listen for interestChanged events from SessionsPage to refresh today's sessions
   useEffect(() => {
     const handleInterestChanged = () => {
       console.log('Interest changed event triggered.');
@@ -118,70 +90,76 @@ const Dashboard = () => {
     };
 
     window.addEventListener('interestChanged', handleInterestChanged);
-
-    // Cleanup Event Listener on Unmount
     return () => {
       window.removeEventListener('interestChanged', handleInterestChanged);
     };
   }, [headers]);
 
-
-  //current date and time
+  // Current date, time, and greeting
   useEffect(() => {
     const timerID = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timerID);
   }, []);
-  const currentDateStr = currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const currentTimeStr = currentTime.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric', hour12: true });
-  //greeting based on time of day
+  
+  const currentDateStr = currentTime.toLocaleDateString(undefined, {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  const currentTimeStr = currentTime.toLocaleTimeString(undefined, {
+    hour: 'numeric', minute: 'numeric', hour12: true
+  });
+  
   const hour = currentTime.getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
-  //task add/edit dialog
-  const handleOpenDialog = (task=null) => {
+  // Task Add/Edit Dialog
+  const handleOpenDialog = (task = null) => {
     setEditingTask(task);
-    if(task) {
+    if (task) {
       setNewTask({
         title: task.title,
-        date: task.due_date ? task.due_date.split('T')[0]: '',
-        time: task.due_date ? task.due_date.split('T')[1].slice(0,5): '',
+        date: task.due_date ? task.due_date.split('T')[0] : '',
+        time: task.due_date ? task.due_date.split('T')[1].slice(0, 5) : '',
         subject: task.subject || '',
       });
     } else {
-      setNewTask({title: '', date: '', time: '', subject: ''});
+      setNewTask({ title: '', date: '', time: '', subject: '' });
     }
     setDialogOpen(true);
   };
+  
   const handleCloseDialog = () => {
     setEditingTask(null);
-    setNewTask({title: '', date: '', time: '', subject: ''});
+    setNewTask({ title: '', date: '', time: '', subject: '' });
     setDialogOpen(false);
   };
+  
   const handleSaveTask = async () => {
-    const {title, date, time, subject} = newTask;
-    if(!title){
+    const { title, date, time, subject } = newTask;
+    if (!title) {
       alert('Task title is required.');
       return;
     }
     try {
-      if (editingTask) { //update task
-        await axios.put( 
-        `http://localhost:5001/tasks/${editingTask.task_id}`,
-        {
-          title,
-          due_date: date && time ? `${date}T${time}:00` : null,
-          subject,
-        },
-        {headers}
-      );
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.task_id === editingTask.task_id
-            ? {...task, title, due_date: date && time ? `${date}T${time}:00` : task.due_date, subject}
-            : task
+      if (editingTask) {
+        // Update task
+        await axios.put(
+          `http://localhost:5001/tasks/${editingTask.task_id}`,
+          {
+            title,
+            due_date: date && time ? `${date}T${time}:00` : null,
+            subject,
+          },
+          { headers }
+        );
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.task_id === editingTask.task_id
+              ? { ...task, title, due_date: date && time ? `${date}T${time}:00` : task.due_date, subject }
+              : task
           )
         );
-      } else { //add task
+      } else {
+        // Add task
         const response = await axios.post(
           'http://localhost:5001/tasks',
           {
@@ -189,7 +167,7 @@ const Dashboard = () => {
             due_date: date && time ? `${date}T${time}:00` : null,
             subject,
           },
-          {headers}
+          { headers }
         );
         setTasks((prev) => [...prev, response.data]);
       }
@@ -198,7 +176,8 @@ const Dashboard = () => {
       console.error('Error saving task:', error);
     }
   };
-  //handle complete task
+
+  // Complete Task
   const handleCompleteTask = async (task) => {
     try {
       await axios.put(
@@ -213,54 +192,54 @@ const Dashboard = () => {
       console.error('Error completing task:', error);
     }
   };
-  //handle delete task
+
+  // Delete Task
   const handleDeleteTask = async (task_id) => {
     try {
-      await axios.delete(
-        `http://localhost:5001/tasks/${task_id}`,
-        {headers}
-      );
-        setTasks((prev) => prev.filter((task) => task.task_id !== task_id));  
+      await axios.delete(`http://localhost:5001/tasks/${task_id}`, { headers });
+      setTasks((prev) => prev.filter((task) => task.task_id !== task_id));
     } catch (error) {
       console.error('Error deleting task:', error);
     }
   };
 
-  //focus timer
-  const [timer, setTimer] = useState(25 * 60); //automatically set to 25 minutes
+  // Focus Timer
+  const [timer, setTimer] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [customTime, setCustomTime] = useState(25);
   const timerRef = React.useRef(null);
   const [currentSubjectTimer, setCurrentSubjectTimer] = useState('');
-  const [subjectTime, setSubjectTime] = useState([]);  
+  const [subjectTime, setSubjectTime] = useState([]);
 
   useEffect(() => {
-    if (isRunning && timer > 0){
+    if (isRunning && timer > 0) {
       timerRef.current = setInterval(() => {
         setTimer((prev) => prev - 1);
       }, 1000);
     }
-    if (!isRunning || timer <= 0){
+    if (!isRunning || timer <= 0) {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
   }, [isRunning, timer]);
+
   useEffect(() => {
-    if(timer === 0 && isRunning){
+    if (timer === 0 && isRunning) {
       setIsRunning(false);
       logFocusSession();
       alert('Focus session completed!');
-      setTimer(customTime*60);
+      setTimer(customTime * 60);
     }
   }, [timer, isRunning]);
+
   const logFocusSession = async () => {
-    if(!currentSubjectTimer) return;
+    if (!currentSubjectTimer) return;
     try {
       await axios.post(
         'http://localhost:5001/activities',
-        {description: `Studied ${currentSubjectTimer} for ${customTime} minutes`, subject: currentSubjectTimer},
-        {headers}
+        { description: `Studied ${currentSubjectTimer} for ${customTime} minutes`, subject: currentSubjectTimer },
+        { headers }
       );
       setSubjectTime((prev) => {
         const index = prev.findIndex((s) => s.subject === currentSubjectTimer);
@@ -269,13 +248,14 @@ const Dashboard = () => {
           updated[index].minutes += customTime;
           return updated;
         } else {
-          return [...prev, {subject: currentSubjectTimer, minutes: customTime}];
+          return [...prev, { subject: currentSubjectTimer, minutes: customTime }];
         }
       });
     } catch (error) {
       console.error('Error logging focus session:', error);
     }
   };
+
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -283,30 +263,34 @@ const Dashboard = () => {
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
+  
   const handleStartPauseTimer = () => {
-    if(!currentSubjectTimer && !isRunning){
+    if (!currentSubjectTimer && !isRunning) {
       alert('Please enter the subject you are studying.');
       return;
     }
     setIsRunning((prev) => !prev);
     setIsStarted(true);
   };
+  
   const handleEndTimer = () => {
     setIsRunning(false);
-    setTimer(customTime*60);
+    setTimer(customTime * 60);
     setIsStarted(false);
     alert('Focus session ended.');
   };
+  
   const handleResetTimer = () => {
     setIsRunning(false);
-    setTimer(customTime*60);
+    setTimer(customTime * 60);
     setCurrentSubjectTimer('');
   };
+  
   const handleCustomTimeChange = (e) => {
     const newTime = parseInt(e.target.value, 10);
     if (!isNaN(newTime) && newTime > 0) {
       setCustomTime(newTime);
-      if (!isStarted){
+      if (!isStarted) {
         setTimer(newTime * 60);
       }
     }
@@ -317,14 +301,10 @@ const Dashboard = () => {
       <Sidebar />
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
-        <Box p={3} flex={1} overflow="auto" 
-          sx={{backgroundColor: 'background.default',
-         }}
-        >
+        <Box p={3} flex={1} overflow="auto">
           <Grid container spacing={3}>
             {/*Left Column*/}
             <Grid item xs={12} md={8}>
-
               {/*Greeting Card*/}
               <Paper className="greeting-card">
                 <Typography variant="h5" gutterBottom>
@@ -356,20 +336,20 @@ const Dashboard = () => {
                   <List>
                     {tasks.map((task) => (
                       <ListItem
-                        key = {task.task_id}
+                        key={task.task_id}
                         secondaryAction={
                           <>
-                          {!task.completed && (
-                            <IconButton edge="end" onClick={() => handleCompleteTask(task)}>
-                              <CheckCircleIcon color="success" />
+                            {!task.completed && (
+                              <IconButton edge="end" onClick={() => handleCompleteTask(task)}>
+                                <CheckCircleIcon color="success" />
+                              </IconButton>
+                            )}
+                            <IconButton edge="end" onClick={() => handleOpenDialog(task)}>
+                              <EditIcon />
                             </IconButton>
-                          )}
-                          <IconButton edge="end" onClick={() => handleOpenDialog(task)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton edge="end" onClick={() => handleDeleteTask(task.task_id)}>
-                            <DeleteIcon />
-                          </IconButton>
+                            <IconButton edge="end" onClick={() => handleDeleteTask(task.task_id)}>
+                              <DeleteIcon />
+                            </IconButton>
                           </>
                         }
                       >
@@ -399,10 +379,9 @@ const Dashboard = () => {
 
             {/*Right Column */}
             <Grid item xs={12} md={4}>
-
-              {/*Mini today's sessions*/}
+              {/*Today's Sessions Section (Fixed variant typo)*/}
               <Paper className="dashboard-section">
-                <Typography varaint="h6" className="dashboard-section-title" gutterBottom>
+                <Typography variant="h6" className="dashboard-section-title" gutterBottom>
                   Today's Sessions
                 </Typography>
                 {sessions.length === 0 ? (
@@ -412,11 +391,11 @@ const Dashboard = () => {
                     {sessions.map((session) => (
                       <ListItem key={session.session_id}>
                         <ListItemText
-                        primary={session.title}
-                        secondary={`${session.venue} at ${new Date(session.date).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}`}
+                          primary={session.title}
+                          secondary={`${session.venue} at ${new Date(session.date).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}`}
                         />
                       </ListItem>
                     ))}
@@ -447,19 +426,21 @@ const Dashboard = () => {
                   value={customTime}
                   onChange={(e) => handleCustomTimeChange(e)}
                   disabled={isStarted}
-                  />
-                  <Typography varaint="h3" className="timer-display"
-                    sx={{
-                      fontWeight: 'bold',
-                      fontFamily: 'Roboto',
-                      color: '#000',
-                      marginY: 2,
-                    }}
-                  >
-                    {isStarted ? formatTime(timer) : '--:--'}
-                  </Typography>
-                  <Box display="flex" gap={2} justifyContent="center">
-                    {!isStarted ? (
+                />
+                <Typography
+                  variant="h3"
+                  className="timer-display"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontFamily: 'Roboto',
+                    color: '#000',
+                    marginY: 2,
+                  }}
+                >
+                  {isStarted ? formatTime(timer) : '--:--'}
+                </Typography>
+                <Box display="flex" gap={2} justifyContent="center">
+                  {!isStarted ? (
                     <Button
                       variant="contained"
                       color="primary"
@@ -467,34 +448,35 @@ const Dashboard = () => {
                       startIcon={<TimerIcon />}
                     >
                       Start
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={handleEndTimer}
-                        >
-                          End
-                          </Button>
-                    )}
-                    <Button variant="outlined" color="secondary" onClick={handleResetTimer}>
-                      Reset
                     </Button>
-                  </Box>
-                  <Typography variant="h6" className="dashboard-section-title" gutterBottom sx={{marginTop: 4}}>
-                    Focus Sessions Completed
-                  </Typography>
-                  {subjectTime.length === 0 ? (
-                  <Typography>No focus sessions logged yet.</Typography>
                   ) : (
-                    <List>
-                      {subjectTime.map((item, index) => (
-                       <ListItem key={index}>
-                          <ListItemText primary={item.subject} secondary={`${item.minutes} minutes`} />
-                        </ListItem>
-                      ))}
-                    </List>
+                    <Button variant="contained" color="error" onClick={handleEndTimer}>
+                      End
+                    </Button>
                   )}
+                  <Button variant="outlined" color="secondary" onClick={handleResetTimer}>
+                    Reset
+                  </Button>
+                </Box>
+                <Typography
+                  variant="h6"
+                  className="dashboard-section-title"
+                  gutterBottom
+                  sx={{ marginTop: 4 }}
+                >
+                  Focus Sessions Completed
+                </Typography>
+                {subjectTime.length === 0 ? (
+                  <Typography>No focus sessions logged yet.</Typography>
+                ) : (
+                  <List>
+                    {subjectTime.map((item, index) => (
+                      <ListItem key={index}>
+                        <ListItemText primary={item.subject} secondary={`${item.minutes} minutes`} />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
               </Paper>
             </Grid>
           </Grid>
@@ -553,6 +535,5 @@ const Dashboard = () => {
     </Box>
   );
 };
-   
 
 export default Dashboard;

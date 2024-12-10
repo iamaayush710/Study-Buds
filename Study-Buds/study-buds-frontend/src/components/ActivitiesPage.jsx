@@ -1,62 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from 'recharts';
+  Box,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  Button
+} from '@mui/material';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import axios from 'axios';
+import '../App.css'; // Ensure this imports your CSS with the animation
 
 const ActivitiesPage = () => {
-  const [studyTime, setStudyTime] = useState([]);
-  const [subjectBreakdown, setSubjectBreakdown] = useState([]);
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
-  useEffect(() => {
-    const fetchStudyTime = async () => {
-      try {
-        const response = await axios.get('http://localhost:5001/user/study-time', { headers });
-        setStudyTime(response.data);
-      } catch (error) {
-        console.error('Error fetching study time:', error);
-      }
-    };
-    fetchStudyTime();
-  }, [headers]);
+  const [activities, setActivities] = useState([]);
+  
+  // A few random fun break tips:
+  const tips = [
+    "Take a deep breath and smile!",
+    "Hydrate! Grab a glass of water before your next task.",
+    "Stand up and stretch for a minute—your body will thank you.",
+    "Look away from the screen and blink slowly.",
+    "Remember: small breaks can boost creativity.",
+    "You’re doing great—keep it up!"
+  ];
+
+  // Choose a random tip each time:
+  const [tip] = useState(() => tips[Math.floor(Math.random()*tips.length)]);
+
+  // A selection of games to embed:
+  const games = [
+    {
+      name: "Sudoku",
+      url: "https://www.proprofs.com/games/sudoku/?embed=1"
+    },
+    {
+      name: "Classic Snake Game",
+      url: "https://playpager.com/embed/snake/index.html"
+    },
+    {
+      name: "Word Search",
+      url: "https://www.proprofs.com/games/word-search/?embed=1&game=646242"
+    }
+  ];
+
+  const [currentGame, setCurrentGame] = useState(() => games[0]);
+
+  const fetchActivities = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/activities', { headers });
+      setActivities(response.data);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchSubjectBreakdown = async () => {
-      try {
-        const response = await axios.get('http://localhost:5001/user/study-time', { headers });
-        const breakdown = {};
-        response.data.forEach((entry) => {
-          const subject = entry.subject || 'Unknown';
-          breakdown[subject] = (breakdown[subject] || 0) + entry.total_minutes;
-        });
-        const formatted = Object.keys(breakdown).map((key) => ({
-          name: key,
-          value: breakdown[key],
-        }));
-        setSubjectBreakdown(formatted);
-      } catch (error) {
-        console.error('Error fetching subject breakdown:', error);
-      }
-    };
-    fetchSubjectBreakdown();
+    fetchActivities();
   }, [headers]);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF'];
+  const handleShuffleGame = () => {
+    let newGame = currentGame;
+    if (games.length > 1) {
+      // Keep picking until a different game is chosen
+      while (newGame === currentGame) {
+        newGame = games[Math.floor(Math.random()*games.length)];
+      }
+    }
+    setCurrentGame(newGame);
+  };
 
   return (
     <Box display="flex" height="100vh">
@@ -65,58 +81,78 @@ const ActivitiesPage = () => {
         <Header />
         <Box p={3} flex={1} overflow="auto">
           <Typography variant="h4" gutterBottom>
-            My Activities
+            Activities
           </Typography>
 
-          {/* Study Time Over Last 7 Days */}
-          <Paper sx={{ p: 2, mb: 4, background: '#ffffff' }}>
+          {/* Recent Activities Section */}
+          <Paper sx={{ p: 2, background: '#ffffff', mb: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Study Time Over Last 7 Days
+              Recent Activities
             </Typography>
-            {studyTime.length === 0 ? (
-              <Typography>No study data available.</Typography>
+            {activities.length === 0 ? (
+              <Typography>No recent activities found.</Typography>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={studyTime}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis label={{ value: 'Minutes', angle: -90, position: 'insideLeft' }} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="total_minutes" stroke="#8884d8" activeDot={{ r: 8 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              <List>
+                {activities.map((activity) => (
+                  <ListItem key={activity.activity_id}>
+                    <ListItemText
+                      primary={activity.description}
+                      secondary={`${activity.created_at}${
+                        activity.subject ? ' | Subject: ' + activity.subject : ''
+                      }${activity.type ? ' | Type: ' + activity.type : ''}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             )}
           </Paper>
 
-          {/* Study Time by Subject */}
-          <Paper sx={{ p: 2, background: '#ffffff' }}>
+          {/* Fun Section: Tip of the Day */}
+          <Paper sx={{ p: 2, background: '#ffffff', mb: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Study Time by Subject
+              Quick Break Tip
             </Typography>
-            {subjectBreakdown.length === 0 ? (
-              <Typography>No subject data available.</Typography>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={subjectBreakdown}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    label
-                  >
-                    {subjectBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
+            <Typography variant="body1">
+              {tip}
+            </Typography>
+          </Paper>
+
+          {/* Fun Puzzle / Game Section */}
+          <Paper sx={{ p: 2, background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+            <Typography variant="h6" gutterBottom>
+              Take a Fun Break!
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              Refresh your mind with a quick game. Feeling adventurous?
+              Try a different one by clicking "Shuffle Game".
+            </Typography>
+
+            <Button variant="contained" color="secondary" onClick={handleShuffleGame} sx={{ mb: 2, mt: 1 }}>
+              Shuffle Game
+            </Button>
+
+            <Box
+              className="game-container"
+              sx={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: 600,
+                margin: '0 auto',
+                border: '3px solid #f0f0f0',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                mt: 2
+              }}
+            >
+              <iframe
+                src={currentGame.url}
+                width="600"
+                height="600"
+                style={{ border: 'none', display: 'block' }}
+                title={currentGame.name}
+                allowFullScreen
+              ></iframe>
+            </Box>
           </Paper>
         </Box>
       </Box>

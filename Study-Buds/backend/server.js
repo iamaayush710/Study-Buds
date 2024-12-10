@@ -658,12 +658,13 @@ app.post('/sessions/:session_id/interested', authenticateToken, (req, res) => {
 
                     if (record) {
                         // Toggle the "is_interested" flag
-                        const newInterestStatus = record.is_interested === 1 ? 0 : 1;
+                        const currentStatus = Number(record.is_interested) || 0; 
+                        const newInterestStatus = currentStatus === 1 ? 0 : 1;
                         const message = newInterestStatus ? 'Marked as interested!' : 'Interest removed!';
                         console.log(`Updating is_interested to ${newInterestStatus} for Record ID: ${record.id}`);
 
                         db.run(
-                            `UPDATE user_sessions SET is_interested = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                            `UPDATE user_sessions SET is_interested = ? WHERE id = ?`,
                             [newInterestStatus, record.id],
                             function (updateErr) {
                                 if (updateErr) {
@@ -695,6 +696,7 @@ app.post('/sessions/:session_id/interested', authenticateToken, (req, res) => {
         }
     );
 });
+
 
 // Complete a session (mark as done, store duration, log activity)
 app.put('/sessions/:session_id/complete', authenticateToken, [

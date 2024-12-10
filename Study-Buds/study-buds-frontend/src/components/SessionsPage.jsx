@@ -1,5 +1,3 @@
-// SessionsPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -49,7 +47,7 @@ const SessionsPage = () => {
       }
     };
     fetchProfile();
-  }, [headers]); // Added 'headers' as dependency
+  }, [headers]);
 
   // Fetch all sessions
   useEffect(() => {
@@ -63,7 +61,7 @@ const SessionsPage = () => {
       }
     };
     fetchSessions();
-  }, [headers]); // Added 'headers' as dependency
+  }, [headers]);
 
   // Add a new session
   const handleAddSession = async () => {
@@ -109,19 +107,16 @@ const SessionsPage = () => {
   };
 
   // Toggle interest in a session
-  const handleToggleInterest = async (session_id, is_interested) => {
+  const handleToggleInterest = async (session_id) => {
     try {
-      // Call the correct toggle interest endpoint
       const response = await axios.post(
         `http://localhost:5001/sessions/${session_id}/interested`,
-        {}, // Empty body as per backend implementation
+        {},
         { headers }
       );
 
-      // Show a success message based on the response
       alert(response.data.message); // "Marked as interested!" or "Interest removed!"
 
-      // Update the session's is_interested status in the local state based on response
       const updatedSessions = sessions.map((session) =>
         session.session_id === session_id
           ? { ...session, is_interested: response.data.is_interested }
@@ -148,9 +143,9 @@ const SessionsPage = () => {
       <Box flex={1} display="flex" flexDirection="column">
         <Header />
         <Box p={3} flex={1} overflow="auto">
-         {/* <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom>
             Study Sessions
-          </Typography>*/}
+          </Typography>
           {/* Add Session Form */}
           <Paper sx={{ p: 2, mb: 2, background: '#ffffff' }}>
             <Typography variant="h6" gutterBottom>
@@ -229,13 +224,16 @@ const SessionsPage = () => {
                   <ListItem key={session.session_id} divider>
                     <ListItemText
                       primary={`${session.title} (${session.type})`}
-                      secondary={`Venue: ${session.venue} | Subject: ${session.subject || 'N/A'} | Time: ${new Date(
-                        session.date
-                      ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                      secondary={`Venue: ${session.venue} | Subject: ${
+                        session.subject || 'N/A'
+                      } | Time: ${new Date(session.date).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}`}
                     />
                     {/* Interested Button */}
                     <IconButton
-                      onClick={() => handleToggleInterest(session.session_id, session.is_interested)}
+                      onClick={() => handleToggleInterest(session.session_id)}
                       aria-label={session.is_interested ? 'Unmark Interest' : 'Mark as Interested'}
                     >
                       {session.is_interested ? (
