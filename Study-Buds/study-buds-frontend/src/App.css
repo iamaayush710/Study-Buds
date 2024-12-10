@@ -1,42 +1,95 @@
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/*Sidebar*/
+.MuiDrawer-paper {
+  background-color: #ffffff !important;
+  border-right: 1px solid #ddd;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.MuiListItem-root {
+  margin: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  transition: background-color 0.3s;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.MuiListItem-root:hover{
+  background-color: #d1e3ff !important;
 }
 
-.card {
-  padding: 2em;
+.Mui-selected {
+  background-color: #6c63ff !important;
+  color: #ffffff !important;
 }
 
-.read-the-docs {
-  color: #888;
+.MuiListItemText-primary {
+  font-weight: 500;
+}
+
+/*Header*/
+.MuiAppBar-root {
+  background-color: #ffffff !important;
+  color: #333 !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.MuiToolbar-root {
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.header-profile {
+  display: flex;
+  align-items: center;
+}
+
+/*Dashboard*/
+.dashboard-section {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.dashboard-section-title {
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+}
+
+.greeting-card {
+  background: linear-gradient(135deg, #d0b8fa, #99b7f6) !important;
+  border-radius: 15px;
+  padding: 20px;
+  color: #020202 !important;
+  margin-bottom: 20px;
+}
+
+.focus-timer {
+  text-align: center;
+}
+
+.timer-display {
+  font-size: 36px;
+  font-weight: bold;
+  color: #6c63ff;
+}
+
+.add-task-button{
+  background-color: #6c63ff;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.add-task-button:hover{
+  background-color: #5a54d1;
 }
