@@ -26,7 +26,6 @@ const ActivitiesPage = () => {
     "You are doing great - keep it up!"
   ];
 
-  // Choose a random tip each time
   const [tip] = useState(() => tips[Math.floor(Math.random()*tips.length)]);
 
   // A selection of games to embed

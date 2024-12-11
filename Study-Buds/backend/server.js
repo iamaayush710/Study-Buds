@@ -1,10 +1,10 @@
-import express from 'express';
-import { json } from 'body-parser';
-import cors from 'cors';
-import { body, validationResult } from 'express-validator';
-import db from './database'; 
-import { verify, sign } from 'jsonwebtoken';
-import { hash, compare } from 'bcrypt';
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { body, validationResult } = require('express-validator');
+const db = require('./database'); 
+const jwt = require('jsonwebtoken');
+const bcrypt= require('bcrypt');
 require('dotenv').config();
 
 const app = express();
@@ -12,7 +12,7 @@ const port = process.env.PORT || 5001;
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 // Middleware
-app.use(json());
+app.use(bodyParser.json());
 
 
 //Function to generate random color
@@ -39,12 +39,12 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
-    verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             console.error('JWT Verification Error:', err);
             return res.status(403).json({ error: 'Invalid token.' });
         }
-        req.user = user; // Attach user info to the request
+        req.user = user; 
         next();
     });
 };
@@ -108,7 +108,7 @@ app.post('/auth/register', [
             return res.status(400).json({error: 'Email already in use.'});
             }
 
-            const hashedPassword = await hash(password, 10);
+            const hashedPassword = await bcrypt.hash(password, 10);
 
             db.run(`
                 INSERT INTO users (name, email, password,profile_picture)
@@ -253,14 +253,13 @@ app.post('/auth/login', [
                 return res.status(400).json({ error: 'Invalid email or password.' });
             }
 
-            //compare password with user password
-            const isSame = await compare(password, user.password);
+            const isSame = await bcrypt.compare(password, user.password);
             if (!isSame) {
                 return res.status(400).json({ error: 'Invalid email or password.' });
             }
 
             //generate token
-            const token = sign(
+            const token = jwt.sign(
                 { user_id: user.user_id }, 
                 process.env.JWT_SECRET, 
                 { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
@@ -624,7 +623,7 @@ app.get('/sessions/interested', authenticateToken, (req, res) => {
     );
 });
 
-// MARK "INTERESTED" SESSION
+// Mark "Interested" Sessions
 app.post('/sessions/:session_id/interested', authenticateToken, (req, res) => {
     const userId = req.user.user_id;
     const { session_id } = req.params;

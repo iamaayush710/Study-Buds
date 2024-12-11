@@ -23,7 +23,7 @@ const Login = () => {
       //store token for future use
       localStorage.setItem('token', token);
 
-      navigate('/dashboard'); // redirect to dashboard 
+      navigate('/dashboard'); 
 
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');

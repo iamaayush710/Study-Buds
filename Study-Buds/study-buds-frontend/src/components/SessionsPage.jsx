@@ -115,7 +115,7 @@ const SessionsPage = () => {
         { headers }
       );
 
-      alert(response.data.message); // "Marked as interested!" or "Interest removed!"
+      alert(response.data.message);
 
       const updatedSessions = sessions.map((session) =>
         session.session_id === session_id
@@ -124,7 +124,7 @@ const SessionsPage = () => {
       );
       setSessions(updatedSessions);
 
-      // Dispatch an event to inform Dashboard.jsx to refresh "Today's Sessions"
+      // Dispatch an event to inform Dashboard.jsx.
       window.dispatchEvent(new Event('interestChanged'));
     } catch (error) {
       console.error('Error toggling interest in session:', error);

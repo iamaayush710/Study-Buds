@@ -24,7 +24,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../App.css';
 
-const drawerWidth = 260; // fixed width for the sidebar
+const drawerWidth = 260;
 
 const Sidebar = () => {
   const navigate = useNavigate();
