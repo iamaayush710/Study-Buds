@@ -376,7 +376,7 @@ const Dashboard = () => {
             </Grid>
 
             {/*Right Column */}
-            <Grid item xs={12} md={4}>\
+            <Grid item xs={12} md={4}>
 
               {/*Today's Sessions */}
               <Paper className="dashboard-section">
