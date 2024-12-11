@@ -107,7 +107,7 @@ const SessionsPage = () => {
   };
 
   // Toggle interest in a session
-  const handleToggleInterest = async (session_id) => {
+  const handleToggleInterest = async (session_id, is_interested) => {
     try {
       const response = await axios.post(
         `http://localhost:5001/sessions/${session_id}/interested`,
@@ -235,7 +235,7 @@ const SessionsPage = () => {
 
                     {/* Interested Button */}
                     <IconButton
-                      onClick={() => handleToggleInterest(session.session_id)}
+                      onClick={() => handleToggleInterest(session.session_id, session.is_interested)}
                       aria-label={session.is_interested ? 'Unmark Interest' : 'Mark as Interested'}
                     >
                       {session.is_interested ? (
